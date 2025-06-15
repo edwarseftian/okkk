@@ -1,0 +1,675 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Account Store - Buy & Sell Accounts</title>
+<style>
+  /* Resets */
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+  body {
+    font-family: 'Inter', sans-serif;
+    background: #121212;
+    color: #e0e0e0;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+  a {
+    text-decoration: none;
+    color: inherit;
+  }
+  img {
+    max-width: 100%;
+    border-radius: 12px;
+    object-fit: cover;
+  }
+
+  /* Variables */
+  :root {
+    --primary-color: #03dac6;
+    --secondary-color: #018786;
+    --background-color: #121212;
+    --card-bg: #1e1e1e;
+    --text-color: #e0e0e0;
+    --shadow-color: rgba(0,0,0,0.7);
+    --border-radius: 12px;
+  }
+
+  /* Container */
+  .container {
+    width: 95%;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding-bottom: 64px;
+    flex-grow: 1;
+  }
+
+  /* Header */
+  header {
+    background-color: var(--card-bg);
+    padding: 16px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    box-shadow: 0 2px 6px var(--shadow-color);
+  }
+  .logo {
+    font-weight: 900;
+    font-size: 1.8rem;
+    color: var(--primary-color);
+    user-select: none;
+  }
+  nav.desktop-nav {
+    display: flex;
+    gap: 24px;
+  }
+  nav.desktop-nav a {
+    font-weight: 600;
+    font-size: 1rem;
+    padding: 8px 12px;
+    border-radius: 8px;
+    transition: background-color 0.3s ease;
+  }
+  nav.desktop-nav a:hover,
+  nav.desktop-nav a:focus {
+    background-color: var(--secondary-color);
+    outline: none;
+  }
+
+  /* Mobile Hamburger */
+  button.mobile-menu-btn {
+    background: none;
+    border: none;
+    color: var(--primary-color);
+    font-size: 2rem;
+    cursor: pointer;
+    display: none;
+  }
+  /* Mobile Nav */
+  nav.mobile-nav {
+    display: none;
+    position: fixed;
+    top: 64px;
+    left: 0;
+    width: 100%;
+    background-color: var(--card-bg);
+    padding: 16px 24px;
+    box-shadow: 0 2px 10px var(--shadow-color);
+    flex-direction: column;
+    gap: 16px;
+    z-index: 1000;
+  }
+  nav.mobile-nav a {
+    font-weight: 600;
+    font-size: 1.2rem;
+    padding: 8px 12px;
+    border-radius: 8px;
+  }
+  nav.mobile-nav.show {
+    display: flex;
+  }
+
+  /* Main Content */
+  main {
+    margin-top: 24px;
+  }
+
+  /* Product Grid */
+  .product-grid {
+    display: grid;
+    gap: 32px;
+    margin-top: 24px;
+  }
+  @media (max-width:640px) {
+    .product-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+  @media (min-width:641px) and (max-width:1024px) {
+    .product-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+  @media (min-width:1025px) {
+    .product-grid {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+
+  /* Product Card */
+  .product-card {
+    background-color: var(--card-bg);
+    border-radius: var(--border-radius);
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 4px 10px var(--shadow-color);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+  }
+  .product-card:hover,
+  .product-card:focus-within {
+    transform: translateY(-6px);
+    box-shadow: 0 12px 24px var(--primary-color);
+    outline: none;
+  }
+  .product-image {
+    border-radius: var(--border-radius);
+    height: 180px;
+    margin-bottom: 16px;
+    background-color: #222;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+  }
+  .product-title {
+    font-size: 1.3rem;
+    font-weight: 700;
+    margin-bottom: 8px;
+  }
+  .product-description {
+    font-size: 0.9rem;
+    color: #aaa;
+    flex-grow: 1;
+    margin-bottom: 12px;
+  }
+  .product-price {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--primary-color);
+    margin-bottom: 12px;
+  }
+  button.buy-now-btn {
+    background-color: var(--primary-color);
+    border: none;
+    color: var(--background-color);
+    padding: 12px 0;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+  button.buy-now-btn:hover,
+  button.buy-now-btn:focus {
+    background-color: var(--secondary-color);
+    outline: none;
+  }
+
+  /* Cart Sidebar */
+  aside.cart-sidebar {
+    position: fixed;
+    right: 0;
+    top: 0;
+    width: 320px;
+    height: 100%;
+    background-color: var(--card-bg);
+    box-shadow: -4px 0 12px var(--shadow-color);
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    transform: translateX(100%);
+    transition: transform 0.3s ease;
+    z-index: 1500;
+  }
+  aside.cart-sidebar.open {
+    transform: translateX(0);
+  }
+  aside.cart-sidebar h2 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin-bottom: 24px;
+    color: var(--primary-color);
+  }
+  .cart-items {
+    flex-grow: 1;
+    overflow-y: auto;
+    margin-bottom: 24px;
+  }
+  .cart-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+  }
+  .cart-item-info {
+    flex-grow: 1;
+    margin-right: 12px;
+  }
+  .cart-item-title {
+    font-weight: 600;
+    font-size: 1rem;
+  }
+  .cart-item-price {
+    font-size: 0.9rem;
+    color: #aaa;
+  }
+  .cart-item-qty {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .cart-item-qty button {
+    background-color: var(--primary-color);
+    border: none;
+    color: var(--background-color);
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
+    font-weight: 700;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  .cart-item-qty span {
+    min-width: 22px;
+    text-align: center;
+  }
+  button.remove-item-btn {
+    background: none;
+    border: none;
+    color: #f03535;
+    font-size: 1.2rem;
+    cursor: pointer;
+    padding: 0 8px;
+  }
+
+  .cart-total {
+    font-weight: 700;
+    font-size: 1.3rem;
+    margin-bottom: 24px;
+    text-align: right;
+  }
+  button.checkout-btn {
+    background-color: var(--secondary-color);
+    border: none;
+    color: var(--background-color);
+    padding: 14px 0;
+    border-radius: 10px;
+    font-weight: 700;
+    font-size: 1.2rem;
+    cursor: pointer;
+    width: 100%;
+    transition: background-color 0.3s ease;
+  }
+  button.checkout-btn:hover,
+  button.checkout-btn:focus {
+    background-color: var(--primary-color);
+    outline: none;
+  }
+
+  /* Overlay */
+  .overlay {
+    position: fixed;
+    inset: 0;
+    background-color: rgba(0,0,0,0.5);
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease;
+    z-index: 1400;
+  }
+  .overlay.show {
+    opacity: 1;
+    visibility: visible;
+  }
+
+  /* Contact Section */
+  #contact {
+    max-width: 800px;
+    margin: 48px auto;
+    background-color: var(--card-bg);
+    padding: 32px;
+    border-radius: var(--border-radius);
+    box-shadow: 0 4px 12px var(--shadow-color);
+  }
+  #contact h2 {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--primary-color);
+    margin-bottom: 24px;
+  }
+  #contact ul {
+    list-style: none;
+  }
+  #contact li {
+    margin-bottom: 16px;
+    font-size: 1.1rem;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  #contact li .material-icons {
+    color: var(--primary-color);
+    font-size: 1.8rem;
+  }
+
+  /* Footer */
+  footer {
+    background-color: var(--card-bg);
+    padding: 24px;
+    text-align: center;
+    color: #777;
+    font-size: 0.9rem;
+  }
+
+  /* Responsive Header - show hamburger on less than 768 */
+  @media (max-width: 767px) {
+    nav.desktop-nav {
+      display: none;
+    }
+    button.mobile-menu-btn {
+      display: block;
+    }
+  }
+  @media (min-width: 768px) {
+    nav.mobile-nav {
+      display: none !important;
+    }
+    aside.cart-sidebar {
+      width: 360px;
+    }
+  }
+  /* Accessibility focus outlines */
+  a:focus, button:focus {
+    outline: 3px solid var(--primary-color);
+    outline-offset: 2px;
+  }
+</style>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
+</head>
+<body>
+
+<header>
+  <div class="logo" tabindex="0">AccountStore</div>
+  <nav class="desktop-nav" aria-label="Primary navigation">
+    <a href="#products" tabindex="0">Products</a>
+    <a href="#about" tabindex="0">About</a>
+    <a href="#contact" tabindex="0">Contact</a>
+    <button id="cartToggleTopBtn" aria-label="Open shopping cart" style="background:none; border:none; color: var(--primary-color); cursor:pointer; font-size:1.6rem;">
+      <span class="material-icons" aria-hidden="true">shopping_cart</span>
+    </button>
+  </nav>
+  <button class="mobile-menu-btn" aria-label="Toggle menu" aria-expanded="false" aria-controls="mobileMenu">
+    <span class="material-icons" aria-hidden="true">menu</span>
+  </button>
+</header>
+
+<nav class="mobile-nav" id="mobileMenu" aria-label="Mobile navigation">
+  <a href="#products" tabindex="0">Products</a>
+  <a href="#about" tabindex="0">About</a>
+  <a href="#contact" tabindex="0">Contact</a>
+  <button id="cartToggleMobileBtn" aria-label="Open shopping cart" style="background:none; border:none; color: var(--primary-color); cursor:pointer; font-size:1.6rem; width:100%; text-align:left;">
+    <span class="material-icons" aria-hidden="true">shopping_cart</span> Cart
+  </button>
+</nav>
+
+<main class="container" id="products" tabindex="-1">
+  <h1 style="font-weight: 900; font-size: 2.8rem; margin-bottom: 24px; color: var(--primary-color);">Featured Accounts</h1>
+  <div class="product-grid" role="list" aria-label="Product catalogue of accounts" id="productGrid">
+    <!-- Product items inserted by JavaScript -->
+  </div>
+
+  <section id="contact" tabindex="-1" aria-label="Contact information">
+    <h2>Contact Us</h2>
+    <ul>
+      <li><span class="material-icons" aria-hidden="true">whatsapp</span> WhatsApp: <a href="https://wa.me/1234567890" target="_blank" rel="noopener noreferrer" style="color: var(--primary-color);">+1 234 567 890</a></li>
+      <li><span class="material-icons" aria-hidden="true">instagram</span> Instagram: <a href="https://instagram.com/yourstore" target="_blank" rel="noopener noreferrer" style="color: var(--primary-color);">@yourstore</a></li>
+    </ul>
+  </section>
+</main>
+
+<!-- Cart Sidebar -->
+<aside class="cart-sidebar" role="complementary" aria-label="Shopping cart" aria-hidden="true" tabindex="-1" id="cartSidebar">
+  <h2>Shopping Cart</h2>
+  <div class="cart-items" id="cartItems" role="list">
+    <!-- Cart items inserted by JS -->
+  </div>
+  <div class="cart-total" id="cartTotal">Total: $0.00</div>
+  <button class="checkout-btn" id="checkoutBtn" disabled>Proceed to Checkout</button>
+  <button style="margin-top:12px; background:none; border:none; color:#aaa; cursor:pointer;" id="closeCartBtn" aria-label="Close shopping cart">
+    <span class="material-icons" aria-hidden="true">close</span> Close
+  </button>
+</aside>
+
+<div class="overlay" id="overlay" tabindex="-1" aria-hidden="true"></div>
+
+<footer>
+  &copy; 2024 Account Store — Secure accounts for sale. All rights reserved.
+</footer>
+
+<script>
+  // Sample products - you can add more with images & data
+  const products = [
+    {
+      id: 1,
+      title: "Premium Gaming Account - Level 99",
+      description: "Level 99 account with rare skins and achievements.",
+      price: 129.99,
+      image: "WhatsApp Image 2025-06-13 at 23.49.31 (1).jpeg",
+    },
+    {
+      id: 2,
+      title: "Streaming Service Account - 1 Year",
+      description: "Netflix Premium account, valid for one year.",
+      price: 59.99,
+      image: "WhatsApp Image 2025-06-13 at 23.49.31 (2).jpeg",
+    },
+    {
+      id: 3,
+      title: "Social Media Verified Account",
+      description: "Verified Instagram account with 200K followers.",
+      price: 199.99,
+      image: "WhatsApp Image 2025-06-13 at 23.49.31.jpeg",
+    },
+    {
+      id: 4,
+      title: "E-learning Platform Account",
+      description: "Access to premium courses and certifications.",
+      price: 29.99,
+      image: "https://storage.googleapis.com/workspace-0f70711f-8b4e-4d94-86f1-2a93ccde5887/image/cc3c583a-3d9e-44ff-a19b-211bb6b098ed.png",
+    },
+    {
+      id: 5,
+      title: "Music Streaming Account - Family Plan",
+      description: "Spotify Family Plan account with 6 slots.",
+      price: 89.99,
+      image: "https://storage.googleapis.com/workspace-0f70711f-8b4e-4d94-86f1-2a93ccde5887/image/51bdec0e-3eb0-44fa-81ae-82569691d3d5.png",
+    },
+    {
+      id: 6,
+      title: "Design Software License Account",
+      description: "Adobe Creative Cloud subscription account.",
+      price: 249.99,
+      image: "https://storage.googleapis.com/workspace-0f70711f-8b4e-4d94-86f1-2a93ccde5887/image/e7f6dcd9-db10-40c8-b98e-de8949d138a8.png",
+    },
+  ];
+
+  // Cart data stored in localStorage
+  let cart = JSON.parse(localStorage.getItem("accountStoreCart")) || {};
+
+  // Elements
+  const productGrid = document.getElementById("productGrid");
+  const cartSidebar = document.getElementById("cartSidebar");
+  const cartItemsContainer = document.getElementById("cartItems");
+  const cartTotalEl = document.getElementById("cartTotal");
+  const checkoutBtn = document.getElementById("checkoutBtn");
+  const overlay = document.getElementById("overlay");
+  const mobileMenuBtn = document.querySelector(".mobile-menu-btn");
+  const mobileMenu = document.getElementById("mobileMenu");
+  const cartToggleTopBtn = document.getElementById("cartToggleTopBtn");
+  const cartToggleMobileBtn = document.getElementById("cartToggleMobileBtn");
+  const closeCartBtn = document.getElementById("closeCartBtn");
+
+  // Format price
+  function formatPrice(amount) {
+    return '$' + amount.toFixed(2);
+  }
+
+  // Render all products in grid
+  function renderProducts() {
+    productGrid.innerHTML = "";
+    products.forEach(p => {
+      const card = document.createElement("article");
+      card.className = "product-card";
+      card.tabIndex = 0;
+      card.innerHTML = `
+        <div class="product-image" aria-label="Image of ${p.title}">
+          <img src="${p.image}" alt="Image showing ${p.title}" onerror="this.src='https://storage.googleapis.com/workspace-0f70711f-8b4e-4d94-86f1-2a93ccde5887/image/24cba31e-5ee3-41de-93d6-3c2945fa10cd.png'"/>
+        </div>
+        <h3 class="product-title">${p.title}</h3>
+        <p class="product-description">${p.description}</p>
+        <div class="product-price">${formatPrice(p.price)}</div>
+        <button class="buy-now-btn" aria-label="Buy ${p.title} now" data-product-id="${p.id}">Buy</button>
+      `;
+      productGrid.appendChild(card);
+    });
+  }
+
+  // Render cart items
+  function renderCart() {
+    cartItemsContainer.innerHTML = "";
+    const productIds = Object.keys(cart);
+    if (productIds.length === 0) {
+      cartItemsContainer.innerHTML = "<p>Your cart is empty.</p>";
+      checkoutBtn.disabled = true;
+      cartTotalEl.textContent = "Total: $0.00";
+      return;
+    }
+    let total = 0;
+    productIds.forEach(id => {
+      const product = products.find(p => p.id === parseInt(id));
+      const qty = cart[id];
+      const itemTotal = product.price * qty;
+      total += itemTotal;
+      const item = document.createElement("div");
+      item.className = "cart-item";
+      item.innerHTML = `
+        <div class="cart-item-info">
+          <div class="cart-item-title">${product.title}</div>
+          <div class="cart-item-price">${formatPrice(itemTotal)}</div>
+        </div>
+        <div class="cart-item-qty" role="group" aria-label="Quantity controls for ${product.title}">
+          <button class="qty-decrease" aria-label="Decrease quantity of ${product.title}">−</button>
+          <span aria-live="polite" aria-atomic="true">${qty}</span>
+          <button class="qty-increase" aria-label="Increase quantity of ${product.title}">+</button>
+          <button class="remove-item-btn" aria-label="Remove ${product.title} from cart" title="Remove item">×</button>
+        </div>
+      `;
+      // Bind events
+      const decBtn = item.querySelector(".qty-decrease");
+      const incBtn = item.querySelector(".qty-increase");
+      const rmvBtn = item.querySelector(".remove-item-btn");
+      decBtn.addEventListener("click", () => {
+        if (cart[id] > 1) {
+          cart[id] -= 1;
+        } else {
+          delete cart[id];
+        }
+        updateCart();
+      });
+      incBtn.addEventListener("click", () => {
+        cart[id] += 1;
+        updateCart();
+      });
+      rmvBtn.addEventListener("click", () => {
+        delete cart[id];
+        updateCart();
+      });
+
+      cartItemsContainer.appendChild(item);
+    });
+    cartTotalEl.textContent = `Total: ${formatPrice(total)}`;
+    checkoutBtn.disabled = false;
+  }
+
+  // Update localStorage and render
+  function updateCart() {
+    localStorage.setItem("accountStoreCart", JSON.stringify(cart));
+    renderCart();
+  }
+
+  // Toggle cart display
+  function toggleCart(show) {
+    if (show) {
+      cartSidebar.classList.add("open");
+      cartSidebar.setAttribute("aria-hidden", "false");
+      overlay.classList.add("show");
+      overlay.setAttribute("aria-hidden", "false");
+      cartSidebar.focus();
+    } else {
+      cartSidebar.classList.remove("open");
+      cartSidebar.setAttribute("aria-hidden", "true");
+      overlay.classList.remove("show");
+      overlay.setAttribute("aria-hidden", "true");
+      document.activeElement.blur();
+    }
+  }
+
+  // Toggle mobile menu display
+  function toggleMobileMenu(show) {
+    if (show) {
+      mobileMenu.classList.add("show");
+      mobileMenuBtn.setAttribute("aria-expanded", "true");
+    } else {
+      mobileMenu.classList.remove("show");
+      mobileMenuBtn.setAttribute("aria-expanded", "false");
+      mobileMenuBtn.focus();
+    }
+  }
+
+  // Event listeners
+  productGrid.addEventListener("click", e => {
+    if (e.target.classList.contains("buy-now-btn")) {
+      e.preventDefault();
+      toggleMobileMenu(false);
+      const contactSection = document.querySelector('#contact');
+      if (contactSection) {
+        contactSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      } else {
+        window.location.hash = '#contact';
+      }
+    }
+  });
+
+  cartToggleTopBtn.addEventListener("click", () => toggleCart(true));
+  cartToggleMobileBtn.addEventListener("click", () => {
+    toggleCart(true);
+    toggleMobileMenu(false);
+  });
+  closeCartBtn.addEventListener("click", () => toggleCart(false));
+  overlay.addEventListener("click", () => {
+    toggleCart(false);
+    toggleMobileMenu(false);
+  });
+
+  mobileMenuBtn.addEventListener("click", () => {
+    if (mobileMenu.classList.contains("show")) {
+      toggleMobileMenu(false);
+    } else {
+      toggleMobileMenu(true);
+    }
+  });
+
+  window.addEventListener("keydown", e => {
+    if (e.key === "Escape") {
+      toggleCart(false);
+      toggleMobileMenu(false);
+    }
+  });
+
+  renderProducts();
+  renderCart();
+</script>
+</body>
+</html>
+
